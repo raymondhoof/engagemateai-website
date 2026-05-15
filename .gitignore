@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Audit + blueprint dumps (may contain tokens, large)
+make_blueprints/
+MAKE_BLUEPRINT_AUDIT.md
+vapi_assistant_dump.json
+make_setup_output.json
+
+# Runtime artifacts
+*.log
+last_run_date.txt
+scheduler_debug.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Node / Cloudflare Workers (for upcoming vapi-backend/)
+node_modules/
+.wrangler/
+.dev.vars
+dist/
+build/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
