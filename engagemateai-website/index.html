@@ -20,6 +20,16 @@
   <meta name="twitter:card" content="summary">
 </head>
 <body>
+  <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <filter id="grain">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feBlend in="SourceGraphic" mode="overlay" result="blend"/>
+        <feComposite in="blend" in2="SourceGraphic"/>
+      </filter>
+    </defs>
+  </svg>
 
   <!-- NAVIGATION -->
   <nav class="navbar" id="navbar">
@@ -69,6 +79,30 @@
           <div class="orbit-dot dot-1"></div>
           <div class="orbit-dot dot-2"></div>
           <div class="orbit-dot dot-3"></div>
+          <div class="hero-card card-1">
+            <span class="card-dot"></span>
+            <div class="card-text">
+              <strong>Lead captured</strong>
+              <span>Inbound call &middot; just now</span>
+            </div>
+            <span class="card-check">&#10003;</span>
+          </div>
+          <div class="hero-card card-2">
+            <span class="card-dot"></span>
+            <div class="card-text">
+              <strong>Appointment booked</strong>
+              <span>Sarah M. &middot; Tomorrow 2pm</span>
+            </div>
+            <span class="card-check">&#10003;</span>
+          </div>
+          <div class="hero-card card-3">
+            <span class="card-dot"></span>
+            <div class="card-text">
+              <strong>Follow-up sent</strong>
+              <span>14 contacts &middot; automated</span>
+            </div>
+            <span class="card-check">&#10003;</span>
+          </div>
         </div>
       </div>
     </div>

@@ -321,6 +321,16 @@ h1, h2, h3, h4 {
   pointer-events: none;
 }
 
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  filter: url(#grain);
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -339,11 +349,11 @@ h1, h2, h3, h4 {
 
 .hero-headline {
   font-family: var(--font-heading);
-  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-size: clamp(2.6rem, 5vw, 4rem);
   font-weight: 700;
   color: var(--brown);
   margin-bottom: 24px;
-  line-height: 1.15;
+  line-height: 1.05;
 }
 
 .headline-accent {
@@ -388,6 +398,18 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
+}
+
+.hero-graphic::before {
+  content: '';
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(ellipse, rgba(128, 124, 68, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero-icon-center {
@@ -1111,4 +1133,70 @@ h1, h2, h3, h4 {
   .industry-card {
     padding: 24px 20px;
   }
+}
+
+/* ---------- HERO FLOATING CARDS ---------- */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+
+.hero-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid rgba(56, 44, 36, 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(56, 44, 36, 0.1);
+  white-space: nowrap;
+  animation: cardEnter 0.6s cubic-bezier(0.4, 0, 0.2, 1) both,
+             cardFloat 4s ease-in-out infinite;
+  z-index: 10;
+}
+
+.hero-card.card-1 { top: -24px;  right: -100px; animation-delay: 0.8s,  1.4s; }
+.hero-card.card-2 { bottom: 20px; left: -110px; animation-delay: 1.1s, 1.7s; }
+.hero-card.card-3 { top: 60px;   left: -120px; animation-delay: 1.4s, 2.0s; }
+
+.card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--olive);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(128, 124, 68, 0.15);
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.card-text strong {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brown);
+  line-height: 1.2;
+}
+
+.card-text span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.card-check {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--olive);
+  margin-left: 4px;
 }
