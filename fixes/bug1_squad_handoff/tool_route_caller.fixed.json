@@ -1,0 +1,46 @@
+{
+  "type": "handoff",
+  "function": null,
+  "destinations": [
+    {
+      "type": "assistant",
+      "assistantId": "6892f5e0-8cb0-4362-9bcf-d295df6894d9",
+      "description": "Transfer here if the caller is a PROSPECT: asking about touring/viewing, scheduling, availability, rent, moving in, or an application/application status for a property they do not yet rent.",
+      "contextEngineeringPlan": {
+        "type": "all"
+      }
+    },
+    {
+      "type": "assistant",
+      "assistantId": "8968c13a-b097-4387-b292-f4ffdd88c5cd",
+      "description": "Transfer here if the caller is a current TENANT/resident: maintenance, repairs, rent payment, lease questions, or any current-resident concern.",
+      "contextEngineeringPlan": {
+        "type": "all"
+      }
+    },
+    {
+      "type": "assistant",
+      "assistantId": "8f33b6fd-c1af-4ad5-9728-83916c805b43",
+      "description": "Transfer here if the caller is a property OWNER: property management services, renting out their property, or investment/owner consultation.",
+      "contextEngineeringPlan": {
+        "type": "all"
+      }
+    },
+    {
+      "type": "assistant",
+      "assistantId": "5d8324fb-2ff5-4a93-b9d9-22e9f02d4a55",
+      "description": "Transfer here ONLY if the caller explicitly wants to become a VENDOR / approved service provider (a vendor application). Not for general maintenance mentions.",
+      "contextEngineeringPlan": {
+        "type": "all"
+      }
+    },
+    {
+      "type": "assistant",
+      "assistantId": "afc690ca-cbb3-4cb0-8dad-7cc5aabec5c0",
+      "description": "Transfer here if intent is unclear/general, the caller is vague, or they ask for Debbie / a manager / a specific person / a human. This assistant takes a message for the team.",
+      "contextEngineeringPlan": {
+        "type": "all"
+      }
+    }
+  ]
+}
