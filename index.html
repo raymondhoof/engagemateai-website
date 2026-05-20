@@ -64,7 +64,7 @@
       { "@type": "Question", "name": "How long until it's answering my phones?", "acceptedAnswer": { "@type": "Answer", "text": "It depends on your integrations, the size of your knowledge base, and your call volume. We scope timeline honestly on the discovery call." } },
       { "@type": "Question", "name": "What does it cost?", "acceptedAnswer": { "@type": "Answer", "text": "Pricing depends on portfolio size, call volume, integrations, and the scope of automation. We talk through it honestly on the discovery call — no commitment from the conversation itself." } },
       { "@type": "Question", "name": "Does it integrate with AppFolio, Buildium, or Yardi?", "acceptedAnswer": { "@type": "Answer", "text": "AppFolio and Tenant Turner are our primary integrations today — we read availability, push leads, log tours. Buildium and Yardi are on our roadmap; we run alongside them via shared data layer in the meantime." } },
-      { "@type": "Question", "name": "What happens when the AI doesn't know the answer?", "acceptedAnswer": { "@type": "Answer", "text": "The system is designed to hand off cleanly to a human — not leave a caller stuck. When the agent encounters something outside its training, it routes to your team or takes a structured callback. Every escalation is logged with the reason." } },
+      { "@type": "Question", "name": "What happens when the AI doesn't know the answer?", "acceptedAnswer": { "@type": "Answer", "text": "Every answer follows a strict source hierarchy: live PMS API first, webhook fallback, then knowledge base. If none of those can confirm something, the agent says so and routes the call — it doesn't hallucinate to fill the silence. On escalation, the bot generates a two-sentence summary and whispers it to your team before the caller hears pickup. Every escalation is logged." } },
       { "@type": "Question", "name": "How do you handle Fair Housing?", "acceptedAnswer": { "@type": "Answer", "text": "We treat Fair Housing as a design constraint. Prompts are written to avoid protected-class questions, steering language, and discriminatory phrasing; the agent escalates anything ambiguous to a human. Every call is transcribed and stored for audit. We're not a substitute for your own legal review." } },
       { "@type": "Question", "name": "Can my team listen to what the AI said on a call?", "acceptedAnswer": { "@type": "Answer", "text": "Every call is transcribed and recorded. Transcripts are available via shared link or daily email; a self-serve dashboard is in active development." } },
       { "@type": "Question", "name": "What if a prospect speaks Spanish?", "acceptedAnswer": { "@type": "Answer", "text": "Yes — our agents handle bilingual conversations natively. Language is detected on first words and the conversation continues in Spanish with the same qualification logic and tour-booking flow." } },
@@ -263,28 +263,21 @@
               <line x1="12" x2="12" y1="19" y2="22"/>
             </svg>
           </div>
-          <h3>AI voice agents</h3>
-          <p>Phone agents trained on property management — answering 24/7. Qualify prospects, book tours, handle tenant FAQs, route anything they can't to your team.</p>
+          <h3>24/7 inbound voice agents</h3>
+          <p>Phone agents trained on property management — answering every call, day or night. Prospects, tenants, vendors, owners. Each caller type handled cleanly, with a clear escalation path.</p>
         </div>
         <div class="service-card fade-up delay-1">
           <div class="service-icon" aria-hidden="true">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="2.5"/>
             </svg>
           </div>
-          <h3>AI chat &amp; SMS assistants</h3>
-          <p>Website and text-message bots that engage every Zillow, Furnished Finder, and direct lead instantly — then guide them to a confirmed tour.</p>
+          <h3>Caller identification &amp; context</h3>
+          <p>The phone rings and the agent already knows who's calling — name, unit, lease status, open tickets, last conversation. No more cold interactions, no more <em>"can I get your address again?"</em></p>
         </div>
         <div class="service-card fade-up delay-2">
-          <div class="service-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <h3>Prospect qualification &amp; routing</h3>
-          <p>Score every inbound lead by source and intent. Route hot prospects to your agents; deflect routine calls to self-service automatically.</p>
-        </div>
-        <div class="service-card fade-up">
           <div class="service-icon" aria-hidden="true">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -294,10 +287,31 @@
               <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
             </svg>
           </div>
-          <h3>Tour booking automation</h3>
-          <p>Confirmed showings on your calendar with automatic reminders and rescheduling. Integrates with Tenant Turner, AppFolio, Calendly, or your tools.</p>
+          <h3>Qualification &amp; tour booking</h3>
+          <p>Every prospect qualified against criteria you define — income, move-in date, pet policy, source. Qualified leads go straight into a confirmed tour on your calendar. Unqualified get a graceful close, no PM time wasted.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <h3>Outbound campaigns</h3>
+          <p>Same infrastructure, working in reverse. Tour confirmations 24 hours out, no-show follow-ups, maintenance close-out calls, lease-renewal outreach — all automated, all logged. New value lines you can switch on one at a time.</p>
         </div>
         <div class="service-card fade-up delay-1">
+          <div class="service-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h3>Maintenance intake &amp; urgency triage</h3>
+          <p>Every ticket classified as it comes in. <strong>Emergencies</strong> — water, fire, gas, security — escalate to a human immediately with a summary. <strong>Urgent</strong> — no heat, no hot water — routed for next-day. <strong>Routine</strong> — ticketed and scheduled. Rules you set, not us.</p>
+        </div>
+        <div class="service-card fade-up delay-2">
           <div class="service-icon" aria-hidden="true">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"/>
@@ -305,17 +319,45 @@
             </svg>
           </div>
           <h3>PMS &amp; workflow integration</h3>
-          <p>Native today with <strong>AppFolio and Tenant Turner</strong>. Buildium, Yardi, and GoHighLevel via shared data layer. Built so your tools stop fighting each other.</p>
+          <p>Native today with <strong>AppFolio and Tenant Turner</strong> — reading availability, pushing leads, logging tours, pulling tenant data. Buildium, Yardi, Dialpad, GoHighLevel via shared data layer. Built so your tools stop fighting each other.</p>
         </div>
-        <div class="service-card fade-up delay-2">
-          <div class="service-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST / ACCURACY -->
+  <section class="trust" id="trust">
+    <div class="container">
+      <div class="section-header fade-up">
+        <p class="section-tag">Why it doesn't sound like a bad bot</p>
+        <h2 class="section-title">The agent knows when it doesn't know.</h2>
+        <p class="section-sub">Most voice AI fails the same way: it guesses. Ours is built to do the opposite — check live data first, escalate when it's uncertain, and never leave a caller stranded.</p>
+      </div>
+      <div class="trust-grid">
+        <div class="trust-card fade-up">
+          <div class="trust-step">01</div>
+          <h3>A source hierarchy, not a guess</h3>
+          <p>Every answer follows the same rule: <strong>live PMS API first</strong> (AppFolio, Tenant Turner), webhook fallback second, knowledge base last. If none of the three can confirm, the agent says so — and routes you the question — instead of hallucinating.</p>
+          <div class="trust-flow" aria-hidden="true">
+            <span>Live API</span>
+            <span class="trust-arrow">&rarr;</span>
+            <span>Webhook</span>
+            <span class="trust-arrow">&rarr;</span>
+            <span>Knowledge base</span>
+            <span class="trust-arrow">&rarr;</span>
+            <span class="trust-flow-final">"Let me get the right person on this."</span>
           </div>
-          <h3>Maintenance intake &amp; follow-up</h3>
-          <p>Tenants log maintenance by phone or text. AI triages urgency, routes to the right vendor, and follows up until the ticket closes.</p>
+        </div>
+        <div class="trust-card fade-up delay-1">
+          <div class="trust-step">02</div>
+          <h3>Warm transfers with a whisper summary</h3>
+          <p>When a call escalates, the AI doesn't just dump it on you. It generates a two-sentence summary — caller, issue, what was attempted — and whispers it to your team <em>before</em> the caller hears them pick up.</p>
+          <div class="trust-whisper">
+            <div class="trust-whisper-row">
+              <span class="trust-whisper-label">You hear, before you say hello:</span>
+            </div>
+            <div class="trust-whisper-quote">"Incoming from James, Unit 4B, reporting a water leak in the bathroom. He's been waiting two minutes — I've logged the details."</div>
+          </div>
         </div>
       </div>
     </div>
@@ -494,34 +536,61 @@
     </div>
   </section>
 
+  <!-- OWNER INTELLIGENCE -->
+  <section class="owner-intel" id="owner-intel">
+    <div class="container">
+      <div class="oi-card fade-up">
+        <div class="oi-tag">For owner-operators</div>
+        <h2 class="oi-title">Your phones are sitting on intelligence you haven't read.</h2>
+        <p class="oi-body">For clients who both manage <em>and</em> own — every caller interaction is a data point about your portfolio. We surface the patterns: which property is generating the most enquiries and why, what prospects are asking for that you're not offering, which objections are killing conversions, what maintenance signals are hinting at deferred capex.</p>
+        <div class="oi-grid">
+          <div class="oi-stat">
+            <div class="oi-stat-label">Demand signal</div>
+            <div class="oi-stat-body">Enquiry volume by property &middot; intent breakdown by source</div>
+          </div>
+          <div class="oi-stat">
+            <div class="oi-stat-label">Conversion signal</div>
+            <div class="oi-stat-body">Top objections this month &middot; questions that didn't convert</div>
+          </div>
+          <div class="oi-stat">
+            <div class="oi-stat-label">Capex signal</div>
+            <div class="oi-stat-body">Repeat maintenance themes &middot; properties trending toward an issue</div>
+          </div>
+        </div>
+        <p class="oi-foot">A monthly intelligence report alongside the operational digest. Available as part of our owner-manager engagements.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ABOUT -->
   <section class="about" id="about">
     <div class="container">
       <div class="about-content fade-up">
         <div class="about-text">
           <p class="section-tag">About Engage Mate AI</p>
-          <h2 class="section-title">Your AI partner for property management.</h2>
-          <p>We're not a generic AI agency that also happens to take PM clients. Property management is the only vertical we work in.</p>
-          <p>Every system we build is custom — designed around your portfolio size, your PMS, your team's workflows, and your specific lead sources. We don't sell software; we install an ongoing AI operating relationship.</p>
-          <p>Our approach is grounded in transparency. Every call transcribed, every escalation logged, every prompt change in your inbox. You measure what we do; we tune monthly based on what you see.</p>
-          <div class="about-values">
-            <div class="about-value">
-              <span class="value-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span>One vertical, deeply. Property management only.</span>
+          <h2 class="section-title">A managed AI partner — not a software licence.</h2>
+          <p>We're not a generic AI agency that also happens to take PM clients. Property management is the only vertical we work in. Every system we build is custom — designed around your portfolio size, your PMS, your team's workflows, and your specific lead sources.</p>
+          <p>Our approach is grounded in transparency. Every call transcribed, every escalation logged, every prompt change visible. You measure what we do; we tune monthly based on what you see.</p>
+          <div class="pillars">
+            <div class="pillar">
+              <div class="pillar-num">01</div>
+              <h3>Vertical depth</h3>
+              <p>Every prompt, every flow, every integration is built for property management — not adapted from a generic template. Fair Housing baked in, PM caller types understood, leasing language native.</p>
             </div>
-            <div class="about-value">
-              <span class="value-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span>Transparency is the product. Every call, every escalation, written down.</span>
+            <div class="pillar">
+              <div class="pillar-num">02</div>
+              <h3>Managed relationship</h3>
+              <p>You don't buy software and figure it out. You get a partner who monitors, optimises, reports, and improves the system every month. We're the expert; you don't have to be.</p>
             </div>
-            <div class="about-value">
-              <span class="value-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span>Long-term partnership. Monthly tuning calls and ongoing optimization — not a hand-off-and-vanish.</span>
+            <div class="pillar">
+              <div class="pillar-num">03</div>
+              <h3>Data moat</h3>
+              <p>Every call we run sharpens the next one. Objection patterns, conversion triggers, failure modes — our agents get better the longer we operate, on data nobody else has.</p>
+            </div>
+            <div class="pillar">
+              <div class="pillar-num">04</div>
+              <h3>Integration stickiness</h3>
+              <p>Native today with AppFolio and Tenant Turner; alongside Dialpad, GoHighLevel, Zillow, TurboTenant. We slot into the stack you already run, instead of replacing it.</p>
             </div>
           </div>
         </div>
@@ -559,7 +628,7 @@
         <details class="faq-item">
           <summary><span class="faq-q">What happens when the AI doesn't know the answer?</span><span class="faq-icon" aria-hidden="true"></span></summary>
           <div class="faq-a">
-            <p>The system is designed to hand off to a human — not leave a caller stuck. When the agent hits something outside its training, it says something natural like <em>"Let me get the right person on this for you,"</em> then either routes live to your team or takes a structured callback with the question and context. Every escalation is logged with the reason. We'd rather escalate ten edge cases than guess once.</p>
+            <p>The system is designed to hand off to a human — not guess. Every answer follows a strict source hierarchy: live PMS API first, webhook fallback, then knowledge base. If none of those can confirm something, the agent says so out loud and routes the call — it doesn't hallucinate to fill the silence. On escalation, the bot generates a two-sentence summary and whispers it to your team before the caller hears them pick up, so they walk in with full context. Every escalation is logged with the reason.</p>
           </div>
         </details>
         <details class="faq-item">
@@ -637,7 +706,7 @@
           <h4>Get started</h4>
           <ul>
             <li><a href="https://calendly.com/engagemateai/discovery-call?utm_source=engagemateai&amp;utm_medium=site&amp;utm_content=footer" target="_blank" rel="noopener">Book a strategy call</a></li>
-            <li><a href="mailto:hello@engagemateai.com">hello@engagemateai.com</a></li>
+            <li><a href="/cdn-cgi/l/email-protection#caa2afa6a6a58aafa4adabadafa7abbeafaba3e4a9a5a7"><span class="__cf_email__" data-cfemail="c4aca1a8a8ab84a1aaa3a5a3a1a9a5b0a1a5adeaa7aba9">[email&#160;protected]</span></a></li>
           </ul>
         </div>
       </div>
@@ -647,6 +716,6 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="script.js"></script>
 </body>
 </html>
