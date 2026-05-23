@@ -7,6 +7,7 @@ import { handleOwner } from '../personas/owner'
 import { handleVendor } from '../personas/vendor'
 import { logger } from '../lib/log'
 import { sendAlert, fmtKv } from '../lib/notify'
+import { autoHealIfNeeded } from '../lib/auto-heal'
 
 export const personaIntent = new Hono<{ Bindings: Bindings }>()
 
@@ -57,6 +58,10 @@ personaIntent.post('/persona-intent', async (c) => {
         bodyHtml: `<p>Worker rejected a /persona-intent request with 401.</p><ul>${fmtKv(probeRecord)}</ul><p>Inspect history: <code>python fixes/auth_probes_history.py --fails-only</code></p>`,
       }),
     )
+    // Secret present but wrong (drift) — attempt auto-heal after threshold. Missing header = external probe, skip.
+    if (sentSecret !== undefined) {
+      c.executionCtx.waitUntil(autoHealIfNeeded(c.env, probeRecord.ip))
+    }
     return c.json({ error: 'unauthorized' }, 401)
   }
 

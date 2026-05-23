@@ -43,4 +43,7 @@ export interface Bindings {
   RESEND_API_KEY: string
   ALERT_EMAIL_TO: string
   ALERT_EMAIL_FROM: string
+  // Auto-heal. VAPI_API_KEY via `wrangler secret put`; PERSONA_INTENT_TOOL_IDS via [vars].
+  VAPI_API_KEY: string
+  PERSONA_INTENT_TOOL_IDS: string
 }

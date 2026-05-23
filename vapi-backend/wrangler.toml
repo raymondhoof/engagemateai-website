@@ -10,6 +10,8 @@ APPFOLIO_BASE_URL = "https://keyrenter044.appfolio.com/api/v2/reports"
 # Resend alert destination/sender. Live 2026-05-23. notify.ts skips silently if any is empty.
 ALERT_EMAIL_TO = "hello@engagemateai.com"
 ALERT_EMAIL_FROM = "Engage Mate Alerts <hello@engagemateai.com>"
+# Auto-heal: comma-separated Vapi tool IDs that call /persona-intent. VAPI_API_KEY via secret.
+PERSONA_INTENT_TOOL_IDS = "f390f48a-63ad-4629-8351-80837a3b870a,a69c0e85-4fe1-426b-816c-2c51e78b770a"
 
 # Enable Workers Observability for log retention beyond `wrangler tail` window
 [observability]
