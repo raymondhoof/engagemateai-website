@@ -8,6 +8,10 @@ import { handleVendor } from '../personas/vendor'
 import { logger } from '../lib/log'
 import { sendAlert, fmtKv } from '../lib/notify'
 import { autoHealIfNeeded } from '../lib/auto-heal'
+import { diagnoseError } from '../lib/diagnose'
+
+const escHtml = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 
 export const personaIntent = new Hono<{ Bindings: Bindings }>()
 
@@ -74,16 +78,21 @@ personaIntent.post('/persona-intent', async (c) => {
 
   const parsed = ToolPayload.safeParse(raw)
   if (!parsed.success) {
-    logger.warn('payload.invalid', { issues: parsed.error.flatten() })
+    const issues = parsed.error.flatten()
+    logger.warn('payload.invalid', { issues })
     c.executionCtx.waitUntil(
-      sendAlert(c.env, {
-        event: 'payload.invalid',
-        ip: probeRecord.ip,
-        subject: `payload.invalid @ ${probeRecord.ts}`,
-        bodyHtml: `<p>Worker rejected a /persona-intent request with 400 (malformed body).</p><ul>${fmtKv({ ip: probeRecord.ip, ua: probeRecord.ua, issues: JSON.stringify(parsed.error.flatten()) })}</ul>`,
-      }),
+      (async () => {
+        const diagnosis = await diagnoseError(c.env, { event: 'payload.invalid', issues })
+        const diagHtml = diagnosis ? `<hr><p><strong>AI Diagnosis:</strong> ${escHtml(diagnosis)}</p>` : ''
+        await sendAlert(c.env, {
+          event: 'payload.invalid',
+          ip: probeRecord.ip,
+          subject: `payload.invalid @ ${probeRecord.ts}`,
+          bodyHtml: `<p>Worker rejected a /persona-intent request with 400 (malformed body).</p><ul>${fmtKv({ ip: probeRecord.ip, ua: probeRecord.ua, issues: JSON.stringify(issues) })}</ul>${diagHtml}`,
+        })
+      })(),
     )
-    return c.json({ error: 'invalid_payload', issues: parsed.error.flatten() }, 400)
+    return c.json({ error: 'invalid_payload', issues }, 400)
   }
   const payload = parsed.data
 
@@ -110,12 +119,21 @@ personaIntent.post('/persona-intent', async (c) => {
     const error = err instanceof Error ? err.message : String(err)
     logger.error('handler.failed', { persona: payload.persona, error })
     c.executionCtx.waitUntil(
-      sendAlert(c.env, {
-        event: 'handler.failed',
-        ip: probeRecord.ip,
-        subject: `handler.failed (${payload.persona}) @ ${probeRecord.ts}`,
-        bodyHtml: `<p>A persona handler threw — Worker returned 500.</p><ul>${fmtKv({ persona: payload.persona, intent: payload.intent ?? '(none)', callerPhone: payload.caller_phone, error })}</ul>`,
-      }),
+      (async () => {
+        const diagnosis = await diagnoseError(c.env, {
+          event: 'handler.failed',
+          persona: payload.persona,
+          error,
+          callerPhone: payload.caller_phone,
+        })
+        const diagHtml = diagnosis ? `<hr><p><strong>AI Diagnosis:</strong> ${escHtml(diagnosis)}</p>` : ''
+        await sendAlert(c.env, {
+          event: 'handler.failed',
+          ip: probeRecord.ip,
+          subject: `handler.failed (${payload.persona}) @ ${probeRecord.ts}`,
+          bodyHtml: `<p>A persona handler threw — Worker returned 500.</p><ul>${fmtKv({ persona: payload.persona, intent: payload.intent ?? '(none)', callerPhone: payload.caller_phone, error })}</ul>${diagHtml}`,
+        })
+      })(),
     )
     return c.json({ error: 'internal_error' }, 500)
   }

@@ -1,0 +1,124 @@
+name: Autopilot (daily triage + fix + rules)
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # 07:00 UTC daily
+  workflow_dispatch:       # manual trigger anytime
+
+permissions:
+  contents: write          # needed to commit qwen_rules/ changes back to master
+
+jobs:
+  autopilot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history required for git push
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv json-repair
+
+      - name: Run apply_approved_fix.py
+        id: apply
+        run: python apply_approved_fix.py
+        env:
+          VAPI_API_KEY: ${{ secrets.VAPI_API_KEY }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_NAME: ${{ secrets.AIRTABLE_TABLE_NAME }}
+
+      - name: Run semantic_rule_updater.py
+        id: rules
+        run: python semantic_rule_updater.py
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Commit qwen_rules changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add qwen_rules/
+          if git diff --cached --quiet; then
+            echo "No qwen_rules changes to commit."
+          else
+            git commit -m "chore(autopilot): semantic rule update [skip ci]"
+            git push
+          fi
+
+      - name: Run auto_triage.py
+        id: triage
+        run: python auto_triage.py
+        env:
+          VAPI_API_KEY: ${{ secrets.VAPI_API_KEY }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_NAME: ${{ secrets.AIRTABLE_TABLE_NAME }}
+          VAPI_ASSISTANT_ID: ${{ secrets.VAPI_ASSISTANT_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Send completion email
+        if: always()
+        run: |
+          python - <<'EOF'
+          import os, datetime, requests
+
+          key = os.environ.get("RESEND_API_KEY", "")
+          if not key:
+              print("RESEND_API_KEY not set — skipping")
+              exit(0)
+
+          ts = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "")
+          run_url = f"https://github.com/{repo}/actions/runs/{run_id}"
+
+          def badge(outcome):
+              return {"success": "✅", "failure": "❌", "skipped": "⏭"}.get(outcome, "❓")
+
+          rows = [
+              ("apply_approved_fix", os.environ.get("APPLY_OUTCOME", "?")),
+              ("semantic_rule_updater", os.environ.get("RULES_OUTCOME", "?")),
+              ("auto_triage", os.environ.get("TRIAGE_OUTCOME", "?")),
+          ]
+          table = "".join(
+              f"<tr><td>{name}</td><td>{badge(o)} {o}</td></tr>" for name, o in rows
+          )
+          any_failed = any(o == "failure" for _, o in rows)
+          subject_flag = "⚠️ FAILED" if any_failed else "✅ OK"
+
+          html = f"""
+          <h2>Engage Mate Autopilot — {ts}</h2>
+          <table border="1" cellpadding="6" style="border-collapse:collapse">
+            <tr><th>Script</th><th>Result</th></tr>
+            {table}
+          </table>
+          <p><a href="{run_url}">View full run logs →</a></p>
+          """
+
+          resp = requests.post(
+              "https://api.resend.com/emails",
+              headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+              json={
+                  "from": "Engage Mate Alerts <hello@engagemateai.com>",
+                  "to": ["hello@engagemateai.com"],
+                  "subject": f"[Autopilot] Daily run {subject_flag} — {ts}",
+                  "html": html,
+              },
+              timeout=15,
+          )
+          print(f"Resend: {resp.status_code} {resp.text[:120]}")
+          EOF
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          APPLY_OUTCOME: ${{ steps.apply.outcome }}
+          RULES_OUTCOME: ${{ steps.rules.outcome }}
+          TRIAGE_OUTCOME: ${{ steps.triage.outcome }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}

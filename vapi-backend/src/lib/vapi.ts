@@ -46,4 +46,6 @@ export interface Bindings {
   // Auto-heal. VAPI_API_KEY via `wrangler secret put`; PERSONA_INTENT_TOOL_IDS via [vars].
   VAPI_API_KEY: string
   PERSONA_INTENT_TOOL_IDS: string
+  // AI diagnosis in alert emails. GROQ_API_KEY via `wrangler secret put`.
+  GROQ_API_KEY: string
 }

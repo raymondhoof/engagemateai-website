@@ -30,6 +30,8 @@ id = "0955d0a3276248bc9322039010e45929"
 #   wrangler secret put APPFOLIO_SECRET       # AppFolio Reports API secret
 #   wrangler secret put VAPI_WEBHOOK_SECRET   # Random string; configure same value in Vapi tool's headers
 #   wrangler secret put RESEND_API_KEY        # re_... from resend.com dashboard. Empty -> alerts skipped silently.
+#   wrangler secret put VAPI_API_KEY          # Vapi API key — auto-heal patches tool secrets
+#   wrangler secret put GROQ_API_KEY          # Groq API key — AI diagnosis in alert emails. Empty -> diagnosis skipped.
 #
 # For local `wrangler dev`, copy values into a (gitignored) .dev.vars file:
 #
