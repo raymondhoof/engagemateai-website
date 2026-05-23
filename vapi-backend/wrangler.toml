@@ -1,0 +1,34 @@
+name = "vapi-backend"
+main = "src/index.ts"
+compatibility_date = "2026-05-06"
+workers_dev = true
+
+# Non-secret environment variables (visible in source)
+[vars]
+GHL_LOCATION_ID = "CeQYcy4XYkPpNclqPbfa"
+APPFOLIO_BASE_URL = "https://keyrenter044.appfolio.com/api/v2/reports"
+
+# Enable Workers Observability for log retention beyond `wrangler tail` window
+[observability]
+enabled = true
+
+# KV for persistent auth.probe history (BUG-3 diagnosis). Read via CF API.
+[[kv_namespaces]]
+binding = "AUTH_PROBES"
+id = "0955d0a3276248bc9322039010e45929"
+
+# ----------------------------------------------------------------------------
+# Secrets — set via `wrangler secret put <NAME>` (NOT in this file).
+#
+#   wrangler secret put GHL_PRIVATE_TOKEN     # Bearer token, prefix "pit-"
+#   wrangler secret put APPFOLIO_CLIENT_ID    # AppFolio Reports API client id (Basic Auth, paired with APPFOLIO_SECRET)
+#   wrangler secret put APPFOLIO_SECRET       # AppFolio Reports API secret
+#   wrangler secret put VAPI_WEBHOOK_SECRET   # Random string; configure same value in Vapi tool's headers
+#
+# For local `wrangler dev`, copy values into a (gitignored) .dev.vars file:
+#
+#   GHL_PRIVATE_TOKEN="pit-..."
+#   APPFOLIO_CLIENT_ID="..."
+#   APPFOLIO_SECRET="..."
+#   VAPI_WEBHOOK_SECRET="..."
+# ----------------------------------------------------------------------------
