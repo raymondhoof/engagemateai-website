@@ -6,6 +6,7 @@ import { handleTenant } from '../personas/tenant'
 import { handleOwner } from '../personas/owner'
 import { handleVendor } from '../personas/vendor'
 import { logger } from '../lib/log'
+import { sendAlert, fmtKv } from '../lib/notify'
 
 export const personaIntent = new Hono<{ Bindings: Bindings }>()
 
@@ -48,6 +49,14 @@ personaIntent.post('/persona-intent', async (c) => {
   )
   if (!sentSecret || sentSecret !== expected) {
     logger.warn('auth.unauthorized', { ip: c.req.header('cf-connecting-ip') ?? 'unknown' })
+    c.executionCtx.waitUntil(
+      sendAlert(c.env, {
+        event: 'auth.unauthorized',
+        ip: probeRecord.ip,
+        subject: `auth.unauthorized @ ${probeRecord.ts}`,
+        bodyHtml: `<p>Worker rejected a /persona-intent request with 401.</p><ul>${fmtKv(probeRecord)}</ul><p>Inspect history: <code>python fixes/auth_probes_history.py --fails-only</code></p>`,
+      }),
+    )
     return c.json({ error: 'unauthorized' }, 401)
   }
 
@@ -61,6 +70,14 @@ personaIntent.post('/persona-intent', async (c) => {
   const parsed = ToolPayload.safeParse(raw)
   if (!parsed.success) {
     logger.warn('payload.invalid', { issues: parsed.error.flatten() })
+    c.executionCtx.waitUntil(
+      sendAlert(c.env, {
+        event: 'payload.invalid',
+        ip: probeRecord.ip,
+        subject: `payload.invalid @ ${probeRecord.ts}`,
+        bodyHtml: `<p>Worker rejected a /persona-intent request with 400 (malformed body).</p><ul>${fmtKv({ ip: probeRecord.ip, ua: probeRecord.ua, issues: JSON.stringify(parsed.error.flatten()) })}</ul>`,
+      }),
+    )
     return c.json({ error: 'invalid_payload', issues: parsed.error.flatten() }, 400)
   }
   const payload = parsed.data
@@ -87,6 +104,14 @@ personaIntent.post('/persona-intent', async (c) => {
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err)
     logger.error('handler.failed', { persona: payload.persona, error })
+    c.executionCtx.waitUntil(
+      sendAlert(c.env, {
+        event: 'handler.failed',
+        ip: probeRecord.ip,
+        subject: `handler.failed (${payload.persona}) @ ${probeRecord.ts}`,
+        bodyHtml: `<p>A persona handler threw — Worker returned 500.</p><ul>${fmtKv({ persona: payload.persona, intent: payload.intent ?? '(none)', callerPhone: payload.caller_phone, error })}</ul>`,
+      }),
+    )
     return c.json({ error: 'internal_error' }, 500)
   }
 })
