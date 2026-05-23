@@ -7,9 +7,9 @@ workers_dev = true
 [vars]
 GHL_LOCATION_ID = "CeQYcy4XYkPpNclqPbfa"
 APPFOLIO_BASE_URL = "https://keyrenter044.appfolio.com/api/v2/reports"
-# Resend alert destination/sender. Empty until Raymond completes signup. notify.ts skips silently while empty.
-ALERT_EMAIL_TO = ""
-ALERT_EMAIL_FROM = ""
+# Resend alert destination/sender. Live 2026-05-23. notify.ts skips silently if any is empty.
+ALERT_EMAIL_TO = "hello@engagemateai.com"
+ALERT_EMAIL_FROM = "Engage Mate Alerts <hello@engagemateai.com>"
 
 # Enable Workers Observability for log retention beyond `wrangler tail` window
 [observability]
