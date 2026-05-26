@@ -117,8 +117,8 @@ VAPI_ASSISTANT_ID = os.getenv("VAPI_ASSISTANT_ID")
 GROQ_API_KEY      = os.getenv("GROQ_API_KEY")
 
 GROQ_API_URL       = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL         = "llama-3.3-70b-versatile"
-INTER_RECORD_SLEEP = 120       # seconds — keeps us under Groq's 30k TPM free-tier limit (bumped for 70B)
+GROQ_MODEL         = "llama-3.1-8b-instant"
+INTER_RECORD_SLEEP = 60        # seconds — 131k TPM free tier on 8b-instant comfortably handles 24k prompts
 RULES_DIR          = "qwen_rules"
 
 VAPI_BASE         = "https://api.vapi.ai"
