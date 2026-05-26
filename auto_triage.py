@@ -117,8 +117,8 @@ VAPI_ASSISTANT_ID = os.getenv("VAPI_ASSISTANT_ID")
 GROQ_API_KEY      = os.getenv("GROQ_API_KEY")
 
 GROQ_API_URL       = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL         = "llama-3.1-8b-instant"
-INTER_RECORD_SLEEP = 60        # seconds — 131k TPM free tier on 8b-instant comfortably handles 24k prompts
+GROQ_MODEL         = "llama-3.3-70b-versatile"
+INTER_RECORD_SLEEP = 120       # seconds — keeps us under Groq's 12k TPM free-tier limit for 70B
 RULES_DIR          = "qwen_rules"
 
 VAPI_BASE         = "https://api.vapi.ai"
@@ -1401,6 +1401,20 @@ def triage_record(record: dict, workflow_json: dict, rules_text: str) -> None:
         update_airtable_record(record_id, {
             F_STATUS:    STATUS_SKIPPED,
             F_RATIONALE: "Clean call, awaiting potential human feedback",
+        })
+        return
+
+    # Rule 4 — dead call with no human flag: caller hung up immediately
+    # (transcript < 300 chars, ended=customer-ended-call, no email). There
+    # is nothing to triage — the agent never got to speak. Skip before Groq.
+    raw_transcript_for_rule4 = str(fields.get(F_TRANSCRIPT) or "").strip()
+    if (not has_human_flag
+            and "customer-ended-call" in ended_reason
+            and len(raw_transcript_for_rule4) < 300):
+        log.info(f"  [filter] -> RULE 4  (dead call, <300 chars, no human flag) -- No Fix Needed")
+        update_airtable_record(record_id, {
+            F_STATUS:    STATUS_NO_FIX_NEEDED,
+            F_RATIONALE: "Caller disconnected immediately — no dialogue to triage.",
         })
         return
 
