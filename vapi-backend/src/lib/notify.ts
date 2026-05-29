@@ -59,7 +59,10 @@ export async function sendAlert(
 
 export function fmtKv(o: Record<string, unknown>): string {
   return Object.entries(o)
-    .map(([k, v]) => `<li><b>${k}</b>: <code>${escapeHtml(String(v))}</code></li>`)
+    .map(([k, v]) => {
+      const display = v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v)
+      return `<li><b>${k}</b>: <code>${escapeHtml(display)}</code></li>`
+    })
     .join('')
 }
 
