@@ -1267,16 +1267,33 @@ def call_qwen(client_note: str, clean_transcript: str,
                 # Non-retryable (auth, malformed request, etc.) — abort.
                 log.error(f"  [groq] FAILED — HTTP {status} (non-retryable) | body: {body_preview}")
                 return None
-            if status >= 400:
+            if status == 429:
+                # Distinct, grep-friendly marker so a TPM/RPM cap hit is
+                # obvious in autopilot.log. Surface Groq's rate-limit headers
+                # (retry-after + remaining tokens) to confirm whether we're
+                # bumping the per-minute ceiling on the active model.
+                retry_after = resp.headers.get("retry-after", "?")
+                tok_remain  = resp.headers.get("x-ratelimit-remaining-tokens", "?")
+                req_remain  = resp.headers.get("x-ratelimit-remaining-requests", "?")
+                log.warning(
+                    f"  [groq] RATE-LIMIT 429 on {GROQ_MODEL} — "
+                    f"retry-after={retry_after}s remaining-tokens={tok_remain} "
+                    f"remaining-requests={req_remain} | body: {body_preview}")
+            elif status >= 400:
                 log.warning(f"  [groq] FAILED — HTTP {status} (retryable) | body: {body_preview}")
             else:
                 elapsed = time.time() - t0
                 try:
-                    raw_text = resp.json()["choices"][0]["message"]["content"]
+                    body = resp.json()
+                    raw_text = body["choices"][0]["message"]["content"]
                 except (KeyError, IndexError, ValueError) as exc:
                     log.warning(f"  [groq] FAILED — unexpected Groq response shape: {exc}")
                 else:
-                    log.info(f"  [groq] done ({elapsed:.1f}s, {len(raw_text)} chars)")
+                    usage = body.get("usage") or {}
+                    tok = (f" | tokens: {usage.get('prompt_tokens','?')} in + "
+                           f"{usage.get('completion_tokens','?')} out = "
+                           f"{usage.get('total_tokens','?')} (cap 30k TPM)")
+                    log.info(f"  [groq] done ({elapsed:.1f}s, {len(raw_text)} chars){tok}")
                     parsed = parse_qwen_response(raw_text)
                     if parsed is not None:
                         return parsed
