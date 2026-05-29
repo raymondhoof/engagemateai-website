@@ -25,7 +25,7 @@ jobs:
 
       - name: Run apply_approved_fix.py
         id: apply
-        run: python apply_approved_fix.py
+        run: python apply_approved_fix.py 2>&1 | tee apply.log
         env:
           VAPI_API_KEY: ${{ secrets.VAPI_API_KEY }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
@@ -34,7 +34,7 @@ jobs:
 
       - name: Run semantic_rule_updater.py
         id: rules
-        run: python semantic_rule_updater.py
+        run: python semantic_rule_updater.py 2>&1 | tee rules.log
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run auto_triage.py
         id: triage
-        run: python auto_triage.py
+        run: python auto_triage.py 2>&1 | tee triage.log
         env:
           VAPI_API_KEY: ${{ secrets.VAPI_API_KEY }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
@@ -67,7 +67,7 @@ jobs:
         if: always()
         run: |
           python - <<'EOF'
-          import os, datetime, requests
+          import os, datetime, requests, re, html as _html, base64
 
           key = os.environ.get("RESEND_API_KEY", "")
           if not key:
@@ -79,19 +79,77 @@ jobs:
           run_id = os.environ.get("GITHUB_RUN_ID", "")
           run_url = f"https://github.com/{repo}/actions/runs/{run_id}"
 
-          def badge(outcome):
-              return {"success": "✅", "failure": "❌", "skipped": "⏭"}.get(outcome, "❓")
+          def read_log(path):
+              try:
+                  with open(path, encoding="utf-8", errors="replace") as f:
+                      return f.read()
+              except FileNotFoundError:
+                  return ""
+
+          logs = {
+              "apply_approved_fix": read_log("apply.log"),
+              "semantic_rule_updater": read_log("rules.log"),
+              "auto_triage": read_log("triage.log"),
+          }
+          triage = logs["auto_triage"]
+
+          # ── Highlights pulled from auto_triage's own logging ──────────────
+          n_429   = triage.count("RATE-LIMIT 429")
+          tokens  = [int(m) for m in re.findall(r"= (\d+) \(cap 30k TPM\)", triage)]
+          max_tok = max(tokens) if tokens else 0
+          n_calls = len(tokens)
+          mdl_m   = re.search(r"Model\s*:\s*(.+)", triage)
+          model   = mdl_m.group(1).strip() if mdl_m else "?"
+          run_m   = re.search(r"Run complete — .*", triage)
+          run_sum = run_m.group(0) if run_m else "(auto_triage did not reach its run-complete line)"
+          n_err   = len(re.findall(r"\bERROR\b", triage))
+
+          def badge(o):
+              return {"success": "✅", "failure": "❌", "skipped": "⏭"}.get(o, "❓")
 
           rows = [
               ("apply_approved_fix", os.environ.get("APPLY_OUTCOME", "?")),
               ("semantic_rule_updater", os.environ.get("RULES_OUTCOME", "?")),
               ("auto_triage", os.environ.get("TRIAGE_OUTCOME", "?")),
           ]
-          table = "".join(
-              f"<tr><td>{name}</td><td>{badge(o)} {o}</td></tr>" for name, o in rows
-          )
+          table = "".join(f"<tr><td>{n}</td><td>{badge(o)} {o}</td></tr>" for n, o in rows)
           any_failed = any(o == "failure" for _, o in rows)
-          subject_flag = "⚠️ FAILED" if any_failed else "✅ OK"
+
+          # 429s surface in the subject even when every script exits green.
+          if any_failed:
+              subject_flag = "⚠️ FAILED"
+          elif n_429:
+              subject_flag = f"⚠️ {n_429}×429"
+          else:
+              subject_flag = "✅ OK"
+
+          tok_flag = "✅" if (max_tok and max_tok < 30000) else ("⚠️" if max_tok else "—")
+          r429_flag = "✅ none" if n_429 == 0 else f"⚠️ {n_429}"
+
+          highlights = f"""
+          <table border="1" cellpadding="6" style="border-collapse:collapse">
+            <tr><td><b>Groq model</b></td><td>{_html.escape(model)}</td></tr>
+            <tr><td><b>Groq calls</b></td><td>{n_calls}</td></tr>
+            <tr><td><b>Max tokens / call</b></td><td>{tok_flag} {max_tok} / 30000</td></tr>
+            <tr><td><b>Rate-limit (429) hits</b></td><td>{r429_flag}</td></tr>
+            <tr><td><b>ERROR lines</b></td><td>{n_err}</td></tr>
+            <tr><td><b>Triage result</b></td><td>{_html.escape(run_sum)}</td></tr>
+          </table>
+          """
+
+          def block(title, text):
+              if not text.strip():
+                  return f"<h3>{title}</h3><p><em>(no log — step skipped or no output)</em></p>"
+              cap = 80000  # inline tail cap; full log is attached
+              shown = text[-cap:]
+              note = "" if shown == text else "<p><em>(tail shown — full log attached)</em></p>"
+              pre = _html.escape(shown)
+              return (f"<details open><summary><b>{title}</b> "
+                      f"({len(text)} chars)</summary>{note}"
+                      f"<pre style='background:#f6f8fa;padding:12px;overflow:auto;"
+                      f"font-size:12px;white-space:pre-wrap'>{pre}</pre></details>")
+
+          log_sections = "".join(block(n, t) for n, t in logs.items())
 
           html = f"""
           <h2>Engage Mate Autopilot — {ts}</h2>
@@ -99,21 +157,40 @@ jobs:
             <tr><th>Script</th><th>Result</th></tr>
             {table}
           </table>
-          <p><a href="{run_url}">View full run logs →</a></p>
+          <h3>Highlights</h3>
+          {highlights}
+          <p><a href="{run_url}">View on GitHub →</a></p>
+          <hr>
+          <h2>Full run logs</h2>
+          {log_sections}
           """
+
+          # Attach full logs as files so nothing is lost to the inline cap.
+          attachments = [
+              {"filename": f"{fn}.log",
+               "content": base64.b64encode(txt.encode("utf-8")).decode("ascii")}
+              for fn, txt in [("apply", logs["apply_approved_fix"]),
+                              ("rules", logs["semantic_rule_updater"]),
+                              ("auto_triage", triage)]
+              if txt.strip()
+          ]
+
+          payload = {
+              "from": "Engage Mate Alerts <hello@engagemateai.com>",
+              "to": ["hello@engagemateai.com"],
+              "subject": f"[Autopilot] Daily run {subject_flag} — {ts}",
+              "html": html,
+          }
+          if attachments:
+              payload["attachments"] = attachments
 
           resp = requests.post(
               "https://api.resend.com/emails",
               headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-              json={
-                  "from": "Engage Mate Alerts <hello@engagemateai.com>",
-                  "to": ["hello@engagemateai.com"],
-                  "subject": f"[Autopilot] Daily run {subject_flag} — {ts}",
-                  "html": html,
-              },
-              timeout=15,
+              json=payload,
+              timeout=30,
           )
-          print(f"Resend: {resp.status_code} {resp.text[:120]}")
+          print(f"Resend: {resp.status_code} {resp.text[:200]}")
           EOF
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
