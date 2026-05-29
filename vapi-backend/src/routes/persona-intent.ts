@@ -25,14 +25,18 @@ export const personaIntent = new Hono<{ Bindings: Bindings }>()
  * secret (the Make webhook is unauthenticated; we don't replicate that), then
  * dispatch to the persona handler.
  */
-// TEMP DIAGNOSTIC (claude 2026-05-22): fingerprint header vs env to locate the BUG-3 mismatch.
-// Never logs raw secret. Remove this `fp` + the auth.probe log line once cause is identified.
 const fp = (s: string | undefined | null): string =>
   s ? `${s.slice(0, 4)}…${s.slice(-4)}@${s.length}` : 'MISSING'
 
 personaIntent.post('/persona-intent', async (c) => {
   const sentSecret = c.req.header('x-vapi-secret')
   const expected = c.env.VAPI_WEBHOOK_SECRET
+  // Capture all x-* + cf-* headers on auth failure to identify unknown callers.
+  // Redacted: only logs header names + lengths, never raw values.
+  const allHeadersRedacted: Record<string, string> = {}
+  c.req.raw.headers.forEach((v, k) => {
+    if (/^(x-|cf-)/.test(k)) allHeadersRedacted[k] = `len=${v.length}`
+  })
   const probeRecord = {
     ts: new Date().toISOString(),
     ip: c.req.header('cf-connecting-ip') ?? 'unknown',
@@ -42,6 +46,7 @@ personaIntent.post('/persona-intent', async (c) => {
     match: sentSecret === expected,
     hasHeader: sentSecret !== undefined,
     contentType: c.req.header('content-type') ?? 'unknown',
+    allHeadersRedacted,
   }
   logger.info('auth.probe', probeRecord)
   // Non-blocking KV write so persistent diagnosis survives wrangler-tail window.

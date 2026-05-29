@@ -7,11 +7,16 @@ workers_dev = true
 [vars]
 GHL_LOCATION_ID = "CeQYcy4XYkPpNclqPbfa"
 APPFOLIO_BASE_URL = "https://keyrenter044.appfolio.com/api/v2/reports"
+# AppFolio Database API (v0) — requires Debbie to contact AppFolio and enable the integration.
+# Leave APPFOLIO_DB_BASE_URL set; add APPFOLIO_DEVELOPER_ID secret once the upgrade is live.
+APPFOLIO_DB_BASE_URL = "https://api.appfolio.com/api/v0"
 # Resend alert destination/sender. Live 2026-05-23. notify.ts skips silently if any is empty.
 ALERT_EMAIL_TO = "hello@engagemateai.com"
 ALERT_EMAIL_FROM = "Engage Mate Alerts <hello@engagemateai.com>"
 # Auto-heal: comma-separated Vapi tool IDs that call /persona-intent. VAPI_API_KEY via secret.
-PERSONA_INTENT_TOOL_IDS = "f390f48a-63ad-4629-8351-80837a3b870a,a69c0e85-4fe1-426b-816c-2c51e78b770a"
+# All 5 apiRequest tools that send x-vapi-secret to /persona-intent (vendor + uncertain currently point to Worker;
+# prospect/tenant/owner still use Make.com but listed here so auto-heal patches them if they're migrated).
+PERSONA_INTENT_TOOL_IDS = "f390f48a-63ad-4629-8351-80837a3b870a,a69c0e85-4fe1-426b-816c-2c51e78b770a,f3845cd4-ae88-41b5-bd5c-2f33cfc4e41e,77075096-b21a-4c2c-9c3d-6ea190c3f783,a05fa590-231d-4924-9a96-54e914f6053f"
 
 # Enable Workers Observability for log retention beyond `wrangler tail` window
 [observability]
@@ -25,13 +30,14 @@ id = "0955d0a3276248bc9322039010e45929"
 # ----------------------------------------------------------------------------
 # Secrets — set via `wrangler secret put <NAME>` (NOT in this file).
 #
-#   wrangler secret put GHL_PRIVATE_TOKEN     # Bearer token, prefix "pit-"
-#   wrangler secret put APPFOLIO_CLIENT_ID    # AppFolio Reports API client id (Basic Auth, paired with APPFOLIO_SECRET)
-#   wrangler secret put APPFOLIO_SECRET       # AppFolio Reports API secret
-#   wrangler secret put VAPI_WEBHOOK_SECRET   # Random string; configure same value in Vapi tool's headers
-#   wrangler secret put RESEND_API_KEY        # re_... from resend.com dashboard. Empty -> alerts skipped silently.
-#   wrangler secret put VAPI_API_KEY          # Vapi API key — auto-heal patches tool secrets
-#   wrangler secret put GROQ_API_KEY          # Groq API key — AI diagnosis in alert emails. Empty -> diagnosis skipped.
+#   wrangler secret put GHL_PRIVATE_TOKEN       # Bearer token, prefix "pit-"
+#   wrangler secret put APPFOLIO_CLIENT_ID      # AppFolio Reports API client id (Basic Auth, paired with APPFOLIO_SECRET)
+#   wrangler secret put APPFOLIO_SECRET         # AppFolio Reports API secret
+#   wrangler secret put APPFOLIO_DEVELOPER_ID   # AppFolio Database API developer ID (from AppFolio rep after upgrade). Empty = DB API skipped.
+#   wrangler secret put VAPI_WEBHOOK_SECRET     # Random string; configure same value in Vapi tool's headers
+#   wrangler secret put RESEND_API_KEY          # re_... from resend.com dashboard. Empty -> alerts skipped silently.
+#   wrangler secret put VAPI_API_KEY            # Vapi API key — auto-heal patches tool secrets
+#   wrangler secret put GROQ_API_KEY            # Groq API key — AI diagnosis in alert emails. Empty -> diagnosis skipped.
 #
 # For local `wrangler dev`, copy values into a (gitignored) .dev.vars file:
 #

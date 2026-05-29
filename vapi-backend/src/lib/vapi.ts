@@ -36,6 +36,11 @@ export interface Bindings {
   // Non-secret vars (in wrangler.toml)
   GHL_LOCATION_ID: string
   APPFOLIO_BASE_URL: string
+  // AppFolio Database API (v0) — requires Debbie to upgrade her AppFolio plan.
+  // APPFOLIO_DB_BASE_URL is always set in wrangler.toml.
+  // APPFOLIO_DEVELOPER_ID is absent/empty until the upgrade is live; hasDbApi() gates all DB calls.
+  APPFOLIO_DB_BASE_URL: string
+  APPFOLIO_DEVELOPER_ID?: string
   // KV — BUG-3 diagnosis log (auth.probe history) + alert throttle locks. Reads via CF API.
   AUTH_PROBES: KVNamespace
   // Resend email alerts. RESEND_API_KEY via `wrangler secret put`; ALERT_EMAIL_* via [vars] in wrangler.toml.
