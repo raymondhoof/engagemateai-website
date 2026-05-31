@@ -29,7 +29,10 @@ const fp = (s: string | undefined | null): string =>
   s ? `${s.slice(0, 4)}…${s.slice(-4)}@${s.length}` : 'MISSING'
 
 personaIntent.post('/persona-intent', async (c) => {
-  const sentSecret = c.req.header('x-vapi-secret')
+  // Vapi apiRequest bug: emits x-vapi-secret twice (empty + value); Cloudflare
+  // Fetch API joins multi-value headers as ", value". Strip the leading ", " if present.
+  const rawSecret = c.req.header('x-vapi-secret')
+  const sentSecret = rawSecret?.startsWith(', ') ? rawSecret.slice(2) : rawSecret
   const expected = c.env.VAPI_WEBHOOK_SECRET
   // Capture all x-* + cf-* headers on auth failure to identify unknown callers.
   // Redacted: only logs header names + lengths, never raw values.
